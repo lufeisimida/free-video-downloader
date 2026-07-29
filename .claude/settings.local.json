@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in ['content_store.py','api_summarize.py','settings.py','main.py','summarizer.py','local_media.py']]; print\\('syntax OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python *)"
+    ]
+  }
+}
