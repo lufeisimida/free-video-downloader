@@ -44,6 +44,7 @@ def _build_user_response(user: dict) -> dict:
         "id": user["id"],
         "email": user["email"],
         "is_vip": is_vip,
+        "is_admin": is_superuser_email(user.get("email")),
         "vip_expire_at": vip_expire_at,
     }
 

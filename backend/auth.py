@@ -84,6 +84,15 @@ async def get_optional_user(credentials: HTTPAuthorizationCredentials = Depends(
         return None
 
 
+async def get_admin_user(user: dict = Depends(get_current_user)) -> dict:
+    """必须是管理员（内置账号或 SUPERUSER_EMAILS 名单中的邮箱）"""
+    from settings import is_superuser_email
+
+    if not is_superuser_email(user.get("email")):
+        raise HTTPException(status_code=403, detail="无权限：仅管理员可操作")
+    return user
+
+
 def sync_builtin_account() -> dict:
     """根据 backend/.env 创建内置账号，并在配置密码变化后同步更新。"""
     from database import create_user, get_user_by_email, update_user_password

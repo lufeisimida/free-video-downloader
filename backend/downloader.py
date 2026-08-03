@@ -4,6 +4,8 @@ import shutil
 import yt_dlp
 from typing import Optional
 
+from cookies import COOKIE_SETTING_KEY, common_ydl_opts
+
 
 def _find_ffmpeg_path() -> Optional[str]:
     """查找 ffmpeg 可执行文件路径"""
@@ -26,6 +28,15 @@ class VideoDownloader:
         os.makedirs(self.DOWNLOAD_DIR, exist_ok=True)
         self.ffmpeg_path = _find_ffmpeg_path()
         self.has_ffmpeg = self.ffmpeg_path is not None
+
+    def _common_opts(self) -> dict:
+        """所有解析/下载共用的基础配置（含登录 Cookie，缓解平台风控）。"""
+        return {
+            "quiet": True,
+            "no_warnings": True,
+            "noplaylist": True,
+            **common_ydl_opts(),
+        }
 
     @staticmethod
     def _sanitize_filename(name: str) -> str:
@@ -54,10 +65,8 @@ class VideoDownloader:
     def parse_video(self, url: str) -> dict:
         """解析视频信息，不下载文件"""
         ydl_opts = {
-            "quiet": True,
-            "no_warnings": True,
+            **self._common_opts(),
             "extract_flat": False,
-            "noplaylist": True,
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -154,11 +163,9 @@ class VideoDownloader:
             format_id = "best"
 
         ydl_opts = {
+            **self._common_opts(),
             "format": format_id,
             "outtmpl": os.path.join(self.DOWNLOAD_DIR, "%(title)s.%(ext)s"),
-            "quiet": True,
-            "no_warnings": True,
-            "noplaylist": True,
         }
 
         if self.has_ffmpeg:
@@ -198,10 +205,8 @@ class VideoDownloader:
     def get_direct_url(self, url: str, format_id: str) -> dict:
         """获取视频直链"""
         ydl_opts = {
+            **self._common_opts(),
             "format": format_id,
-            "quiet": True,
-            "no_warnings": True,
-            "noplaylist": True,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

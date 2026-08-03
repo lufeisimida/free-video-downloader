@@ -20,20 +20,29 @@
         <a v-if="paymentEnabled" href="#pricing" class="hover:text-primary transition-colors" title="查看SaveAny套餐价格">套餐价格</a>
         <button v-if="user" @click="$emit('open-library')" class="hover:text-primary transition-colors cursor-pointer" title="课程资料库">课程资料库</button>
         <button @click="$emit('open-model-config')" class="hover:text-primary transition-colors cursor-pointer" title="模型配置">模型配置</button>
+        <button v-if="user && user.is_admin" @click="$emit('open-cookie-config')" class="hover:text-primary transition-colors cursor-pointer" title="解析 Cookie 配置">Cookie</button>
       </nav>
-      <div class="flex items-center gap-3">
-        <button v-if="user" @click="$emit('open-library')" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer" title="课程资料库">
-          <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h7l2 2h9v11H3V6z" /></svg>
-        </button>
-        <button @click="$emit('open-model-config')" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer" title="模型配置">
-          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="hidden md:flex items-center gap-3">
+          <button v-if="user" @click="$emit('open-library')" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer" title="课程资料库">
+            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h7l2 2h9v11H3V6z" /></svg>
+          </button>
+          <button @click="$emit('open-model-config')" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer" title="模型配置">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+          <button v-if="user && user.is_admin" @click="$emit('open-cookie-config')" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer" title="解析 Cookie 配置">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 00-10-10 3 3 0 01-3-3 3 3 0 01-3-3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5h.01M12 13h.01M15 16h.01" />
+            </svg>
+          </button>
+        </div>
         <!-- 未登录 -->
         <template v-if="!user">
-          <button @click="$emit('login')" class="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-text-secondary hover:text-primary hover:bg-gray-50 transition-colors cursor-pointer">
+          <button @click="$emit('login')" class="inline-flex items-center px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-text-secondary hover:text-primary hover:bg-gray-50 transition-colors cursor-pointer">
             登录
           </button>
           <button v-if="registrationEnabled" @click="$emit('register')" class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white bg-primary hover:bg-blue-600 transition-colors shadow-sm cursor-pointer">
@@ -81,6 +90,18 @@
                 </svg>
                 开通 VIP
               </button>
+              <button @click="menuOpen = false; $emit('open-library')" class="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h7l2 2h9v11H3V6z" /></svg>
+                课程资料库
+              </button>
+              <button @click="menuOpen = false; $emit('open-model-config')" class="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                模型配置
+              </button>
+              <button v-if="user.is_admin" @click="menuOpen = false; $emit('open-cookie-config')" class="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 00-10-10 3 3 0 01-3-3 3 3 0 01-3-3z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5h.01M12 13h.01M15 16h.01" /></svg>
+                Cookie 配置
+              </button>
               <button @click="menuOpen = false; $emit('logout')" class="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -90,7 +111,46 @@
             </div>
           </div>
         </template>
+
+        <!-- 移动端汉堡按钮 -->
+        <button
+          @click="mobileNavOpen = !mobileNavOpen"
+          class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors cursor-pointer"
+          aria-label="打开菜单"
+        >
+          <svg v-if="!mobileNavOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
+    </div>
+
+    <!-- 移动端下拉导航 -->
+    <div v-if="mobileNavOpen" ref="mobileNavRef" class="md:hidden border-t border-border-light bg-white animate-menu-in max-h-[calc(100vh-4rem)] overflow-y-auto">
+      <nav class="px-4 py-3 flex flex-col gap-1 text-sm text-text-secondary" aria-label="移动端导航">
+        <a href="#features" @click="mobileNavOpen = false" class="px-3 py-2.5 rounded-lg hover:bg-gray-50 hover:text-primary transition-colors">功能特性</a>
+        <a href="#how-to-use" @click="mobileNavOpen = false" class="px-3 py-2.5 rounded-lg hover:bg-gray-50 hover:text-primary transition-colors">使用教程</a>
+        <a href="#comparison" @click="mobileNavOpen = false" class="px-3 py-2.5 rounded-lg hover:bg-gray-50 hover:text-primary transition-colors">工具对比</a>
+        <a v-if="paymentEnabled" href="#pricing" @click="mobileNavOpen = false" class="px-3 py-2.5 rounded-lg hover:bg-gray-50 hover:text-primary transition-colors">套餐价格</a>
+
+        <template v-if="user">
+          <div class="my-1 border-t border-border-light"></div>
+          <button @click="mobileNavOpen = false; $emit('open-library')" class="px-3 py-2.5 rounded-lg text-left hover:bg-gray-50 hover:text-primary transition-colors">课程资料库</button>
+          <button @click="mobileNavOpen = false; $emit('open-model-config')" class="px-3 py-2.5 rounded-lg text-left hover:bg-gray-50 hover:text-primary transition-colors">模型配置</button>
+          <button v-if="user.is_admin" @click="mobileNavOpen = false; $emit('open-cookie-config')" class="px-3 py-2.5 rounded-lg text-left hover:bg-gray-50 hover:text-primary transition-colors">Cookie 配置</button>
+          <button v-if="paymentEnabled && !user.is_vip" @click="mobileNavOpen = false; $emit('open-vip')" class="px-3 py-2.5 rounded-lg text-left font-medium text-primary hover:bg-primary-light transition-colors">开通 VIP</button>
+          <button @click="mobileNavOpen = false; $emit('logout')" class="px-3 py-2.5 rounded-lg text-left text-text-secondary hover:bg-gray-50 hover:text-primary transition-colors">退出登录</button>
+        </template>
+
+        <template v-else>
+          <div class="my-1 border-t border-border-light"></div>
+          <button @click="mobileNavOpen = false; $emit('login')" class="px-3 py-2.5 rounded-lg text-left hover:bg-gray-50 hover:text-primary transition-colors">登录</button>
+          <button v-if="registrationEnabled" @click="mobileNavOpen = false; $emit('register')" class="px-3 py-2.5 rounded-lg text-left font-medium text-primary hover:bg-primary-light transition-colors">免费注册</button>
+        </template>
+      </nav>
     </div>
   </header>
 </template>
@@ -104,10 +164,12 @@ defineProps({
   registrationEnabled: { type: Boolean, default: false },
 })
 
-defineEmits(['login', 'register', 'logout', 'open-vip', 'open-model-config', 'open-library'])
+defineEmits(['login', 'register', 'logout', 'open-vip', 'open-model-config', 'open-cookie-config', 'open-library'])
 
 const menuOpen = ref(false)
 const menuRef = ref(null)
+const mobileNavOpen = ref(false)
+const mobileNavRef = ref(null)
 
 function formatDate(isoStr) {
   if (!isoStr) return ''

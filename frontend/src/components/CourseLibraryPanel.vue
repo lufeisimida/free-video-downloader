@@ -45,7 +45,7 @@
                   <svg class="mr-2 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h7l2 2h9v11H3V6z" /></svg>
                   <span class="min-w-0 flex-1 truncate">{{ row.name }}</span><span class="text-xs tabular-nums opacity-60">{{ directVideoCount(row.id) }}</span>
                 </button>
-                <div class="absolute right-1 top-1 hidden items-center gap-0.5 rounded bg-white/95 shadow-sm group-hover:flex">
+                <div class="absolute right-1 top-1 flex md:hidden items-center gap-0.5 rounded bg-white/95 shadow-sm md:group-hover:flex">
                   <button @click.stop="beginCreateFolder(row.id)" class="flex h-7 w-7 items-center justify-center text-text-muted hover:text-primary cursor-pointer" title="新建子目录">+</button>
                   <button @click.stop="renameFolder(row)" class="flex h-7 w-7 items-center justify-center text-text-muted hover:text-primary cursor-pointer" title="重命名"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.2 5.2l3.6 3.6M4 20l4.4-1 10-10a2.5 2.5 0 00-3.5-3.5l-10 10L4 20z" /></svg></button>
                   <button @click.stop="removeFolder(row)" class="flex h-7 w-7 items-center justify-center text-text-muted hover:text-rose-600 cursor-pointer" title="删除目录"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M9 7V4h6v3m-8 0l1 13h8l1-13" /></svg></button>
@@ -103,7 +103,25 @@
                 <section v-if="playingVideo" class="border-b border-border bg-black px-4 py-4 sm:px-6"><div class="mx-auto max-w-4xl"><div class="mb-2 flex items-center justify-between gap-3 text-white"><p class="truncate text-sm font-medium">{{ playingVideo.title }}</p><button @click="closePlayer" class="text-xs text-white/70 hover:text-white cursor-pointer">关闭播放器</button></div><video ref="videoPlayer" :src="playbackUrl" controls autoplay class="aspect-video w-full bg-black" @loadedmetadata="restorePlaybackPosition" @timeupdate="trackPlaybackProgress" @ended="finishPlayback"></video><div class="mt-2 flex items-center gap-2"><input v-model.trim="playerNote" placeholder="记录当前时间点的笔记" class="h-9 min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50" /><button @click="savePlayerNote" :disabled="!playerNote" class="h-9 rounded-md bg-white px-3 text-xs font-medium text-gray-900 disabled:opacity-50 cursor-pointer">添加笔记</button></div></div></section>
                 <div v-if="!filteredVideos.length" class="flex flex-1 flex-col items-center justify-center px-6 text-center text-text-muted"><svg class="mb-3 h-10 w-10 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h6l2 2h8v11H4V6z" /></svg><p class="text-sm">这里还没有解析过的视频</p></div>
                 <div v-else class="min-h-0 flex-1 overflow-auto">
-                  <table class="w-full min-w-[760px] table-fixed text-left">
+                  <!-- 移动端卡片列表 -->
+                  <ul class="divide-y divide-border-light md:hidden">
+                    <li v-for="video in filteredVideos" :key="'m-' + video.id" class="px-4 py-3">
+                      <button @click="openVideo(video)" class="block w-full text-left cursor-pointer">
+                        <p class="text-sm font-medium text-text-primary hover:text-primary line-clamp-2">{{ video.title }}</p>
+                        <p class="mt-1 truncate text-xs text-text-muted">{{ video.platform || '视频' }}<span v-if="video.uploader"> · {{ video.uploader }}</span><span v-if="video.duration_string"> · {{ video.duration_string }}</span></p>
+                      </button>
+                      <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <select :value="video.folder_id ?? ''" @change="moveVideo(video, $event.target.value)" class="h-8 min-w-0 flex-1 rounded-md border border-border bg-white px-2 text-xs text-text-secondary focus:border-primary focus:outline-none"><option value="">未归档</option><option v-for="folder in folderRows" :key="folder.id" :value="folder.id">{{ '—'.repeat(folder.depth) }} {{ folder.name }}</option></select>
+                        <select :value="progressFor(video.id).completion_percent" @change="setVideoProgress(video, $event.target.value)" class="h-8 rounded-md border border-border bg-white px-2 text-xs text-text-secondary"><option :value="0">未学习</option><option :value="25">25%</option><option :value="50">50%</option><option :value="75">75%</option><option :value="100">已完成</option></select>
+                      </div>
+                      <div class="mt-2 flex items-center justify-between">
+                        <span class="text-[11px]" :class="video.has_subtitle ? 'text-emerald-700' : 'text-amber-700'">{{ video.has_subtitle ? '字幕已就绪' : '等待字幕' }} · {{ formatDate(video.parsed_at) }}</span>
+                        <span class="flex items-center gap-3"><button @click="playVideo(video)" class="text-xs font-medium text-primary cursor-pointer">播放</button><button @click="removeVideo(video)" class="text-xs text-text-muted hover:text-rose-600 cursor-pointer">移除</button></span>
+                      </div>
+                    </li>
+                  </ul>
+                  <!-- 桌面端表格 -->
+                  <table class="hidden w-full min-w-[760px] table-fixed text-left md:table">
                     <thead class="sticky top-0 z-10 bg-gray-50 text-xs font-medium text-text-muted"><tr><th class="w-[44%] px-5 py-3">视频</th><th class="w-[18%] px-3 py-3">目录</th><th class="w-[14%] px-3 py-3">内容状态</th><th class="w-[14%] px-3 py-3">解析时间</th><th class="w-[10%] px-3 py-3 text-right">操作</th></tr></thead>
                     <tbody class="divide-y divide-border-light">
                       <tr v-for="video in filteredVideos" :key="video.id" class="hover:bg-gray-50/70">

@@ -104,9 +104,17 @@ async def parse_video(req: ParseRequest, user: dict = Depends(get_current_user))
         result["folder_id"] = library_video["folder_id"]
         return {"success": True, "data": result}
     except Exception as e:
+        message = str(e)
+        if "412" in message:
+            message = (
+                "解析被平台风控拦截（HTTP 412）。服务器 IP 常被 B 站等平台限制，"
+                "请在「Cookie 配置」中填入浏览器导出的登录 Cookie 后重试。"
+            )
+        else:
+            message = f"解析失败: {message}"
         raise HTTPException(status_code=400, detail={
             "success": False,
-            "error": f"解析失败: {str(e)}"
+            "error": message,
         })
 
 
@@ -249,6 +257,7 @@ from api_summarize import router as summarize_router
 from api_auth import router as auth_router
 from api_payment import router as payment_router
 from api_model_config import router as model_config_router
+from api_cookie_config import router as cookie_config_router
 from api_library import router as library_router
 from api_efficiency import router as efficiency_router
 
@@ -256,6 +265,7 @@ app.include_router(summarize_router)
 app.include_router(auth_router)
 app.include_router(payment_router)
 app.include_router(model_config_router)
+app.include_router(cookie_config_router)
 app.include_router(library_router)
 app.include_router(efficiency_router)
 

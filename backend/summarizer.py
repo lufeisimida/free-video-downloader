@@ -27,6 +27,7 @@ QUIZ_BATCH_SPECS = (
 )
 from local_media import is_local_media_url, resolve_local_path
 from settings import load_backend_env
+from cookies import common_ydl_opts, cookie_header
 
 
 load_backend_env()
@@ -199,6 +200,9 @@ class SubtitleExtractor:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 "Referer": f"https://www.bilibili.com/video/{bvid}",
             }
+            cookie = cookie_header()
+            if cookie:
+                headers["Cookie"] = cookie
 
             view_resp = httpx.get(
                 f"https://api.bilibili.com/x/web-interface/view?bvid={bvid}",
@@ -278,6 +282,7 @@ class SubtitleExtractor:
             "writesubtitles": True,
             "writeautomaticsub": True,
             "skip_download": True,
+            **common_ydl_opts(),
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -339,6 +344,7 @@ class SubtitleExtractor:
                 "subtitleslangs": [lang],
                 "subtitlesformat": "vtt",
                 "outtmpl": os.path.join(tmp_dir, "subtitle"),
+                **common_ydl_opts(),
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
@@ -590,6 +596,7 @@ class AudioTranscriber:
             "extractor_retries": 5,
             "socket_timeout": 30,
             "progress_hooks": [download_progress],
+            **common_ydl_opts(),
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

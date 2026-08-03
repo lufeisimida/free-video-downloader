@@ -9,6 +9,7 @@
       @logout="handleLogout"
       @open-vip="handleOpenVip"
       @open-model-config="openModelConfig"
+      @open-cookie-config="openCookieConfig"
       @open-library="openLibrary"
     />
     <main class="flex-1">
@@ -77,15 +78,15 @@
 
     <!-- 支付成功/取消提示 -->
     <Teleport to="body">
-      <div v-if="paymentToast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[200] animate-toast-in">
+      <div v-if="paymentToast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[200] w-[90vw] max-w-md animate-toast-in">
         <div :class="[
-          'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border',
+          'flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border',
           paymentToast === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'
         ]">
-          <svg v-if="paymentToast === 'success'" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-if="paymentToast === 'success'" class="w-5 h-5 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <svg v-else class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg v-else class="w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
           <span class="font-medium text-sm">
@@ -107,6 +108,11 @@
       :visible="modelConfigVisible"
       @close="modelConfigVisible = false"
       @saved="handleModelConfigSaved"
+    />
+
+    <CookieConfigPanel
+      :visible="cookieConfigVisible"
+      @close="cookieConfigVisible = false"
     />
 
     <CourseLibraryPanel
@@ -133,6 +139,7 @@ import PlatformSection from './components/PlatformSection.vue'
 import AppFooter from './components/AppFooter.vue'
 import AuthModal from './components/AuthModal.vue'
 import ModelConfigPanel from './components/ModelConfigPanel.vue'
+import CookieConfigPanel from './components/CookieConfigPanel.vue'
 import CourseLibraryPanel from './components/CourseLibraryPanel.vue'
 import { parseVideo, downloadViaServer } from './api/video.js'
 import { fetchAuthConfig, fetchMe, logout as logoutApi, isLoggedIn } from './api/auth.js'
@@ -153,6 +160,7 @@ const currentUser = ref(null)
 const authModalVisible = ref(false)
 const authModalMode = ref('login')
 const modelConfigVisible = ref(false)
+const cookieConfigVisible = ref(false)
 const libraryPanelVisible = ref(false)
 const libraryRefreshKey = ref(0)
 const libraryFolders = ref([])
@@ -200,6 +208,7 @@ function handleLogout() {
   logoutApi()
   currentUser.value = null
   modelConfigVisible.value = false
+  cookieConfigVisible.value = false
   libraryPanelVisible.value = false
   libraryFolders.value = []
   videoData.value = null
@@ -269,6 +278,15 @@ function handleModelConfigSaved() {
 function openModelConfig() {
   if (!requireLogin()) return
   modelConfigVisible.value = true
+}
+
+function openCookieConfig() {
+  if (!requireLogin()) return
+  if (!currentUser.value?.is_admin) {
+    alert('仅管理员可配置解析 Cookie')
+    return
+  }
+  cookieConfigVisible.value = true
 }
 
 function requireLogin(message = '请先登录后再使用') {

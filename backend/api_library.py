@@ -388,12 +388,15 @@ def _looks_like_playlist(url: str) -> bool:
 def _expand_playlist_url(url: str) -> list[dict]:
     import yt_dlp
 
+    from cookies import common_ydl_opts
+
     with yt_dlp.YoutubeDL({
         "quiet": True,
         "no_warnings": True,
         "extract_flat": "in_playlist",
         "playlistend": 200,
         "skip_download": True,
+        **common_ydl_opts(),
     }) as ydl:
         info = ydl.extract_info(url, download=False)
     entries = (info or {}).get("entries") or []

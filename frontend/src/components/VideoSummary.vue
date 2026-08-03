@@ -90,7 +90,7 @@
           <!-- 字幕文本 Tab -->
           <div v-show="activeTab === 'subtitle'">
             <div v-if="subtitleData.segments && subtitleData.segments.length > 0">
-              <div class="flex items-center justify-between mb-4">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div class="text-sm text-text-secondary">
                   共 {{ subtitleData.segments.length }} 条字幕
                   <span v-if="subtitleData.language" class="ml-2 px-2 py-0.5 bg-primary-light text-primary rounded-full text-xs">
@@ -183,7 +183,7 @@
           <div v-show="activeTab === 'mindmap'">
             <div v-if="mindmapMarkdown || regeneratingPart === 'mindmap'" class="relative">
               <!-- 工具栏 -->
-              <div class="flex items-center justify-end gap-2 mb-3">
+              <div class="flex flex-wrap items-center justify-end gap-2 mb-3">
                 <button
                   @click="regenerateMindmap"
                   :disabled="loading || !!regeneratingPart"
@@ -1959,6 +1959,9 @@ onBeforeUnmount(() => {
   border-collapse: collapse;
   margin: 1rem 0;
   font-size: 0.875rem;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .summary-prose :deep(th) {
   background: var(--color-bg-section);

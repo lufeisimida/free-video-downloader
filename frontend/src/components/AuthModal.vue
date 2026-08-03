@@ -4,7 +4,7 @@
       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-modal-in">
         <!-- Header -->
-        <div class="px-8 pt-8 pb-4">
+        <div class="px-6 sm:px-8 pt-8 pb-4">
           <div class="flex items-center justify-between mb-1">
             <h2 class="text-xl font-bold text-text-primary">
               {{ isLogin ? '登录账号' : '注册账号' }}
@@ -21,7 +21,7 @@
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="px-8 pb-8">
+        <form @submit.prevent="handleSubmit" class="px-6 sm:px-8 pb-8">
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-primary mb-1.5">邮箱地址</label>

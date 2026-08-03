@@ -11,7 +11,7 @@
       </div>
 
       <div class="overflow-x-auto rounded-2xl border border-border-light shadow-sm">
-        <table class="w-full text-sm">
+        <table class="w-full min-w-[560px] text-sm">
           <thead>
             <tr class="bg-gray-50 text-text-primary">
               <th class="text-left px-5 py-3.5 font-semibold">功能对比</th>

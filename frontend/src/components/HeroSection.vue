@@ -40,7 +40,7 @@
               v-model="url"
               type="url"
               :placeholder="placeholder"
-              class="w-full h-13 sm:h-14 pl-12 pr-4 rounded-full sm:rounded-r-none border border-border bg-white text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all shadow-sm"
+              class="w-full h-13 sm:h-14 pl-12 pr-14 sm:pr-4 rounded-full sm:rounded-r-none border border-border bg-white text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all shadow-sm"
               :disabled="loading"
               autocomplete="url"
             />
