@@ -487,6 +487,20 @@ def move_library_video(user_id: int, video_id: int, folder_id: int | None) -> di
         return dict(row) if row else None
 
 
+def rename_library_video(user_id: int, video_id: int, title: str) -> dict | None:
+    now = datetime.now(timezone.utc).isoformat()
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE library_videos SET title = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+            (title, now, video_id, user_id),
+        )
+        row = conn.execute(
+            "SELECT * FROM library_videos WHERE id = ? AND user_id = ?",
+            (video_id, user_id),
+        ).fetchone()
+        return dict(row) if row else None
+
+
 def delete_library_video(user_id: int, video_id: int) -> bool:
     with get_db() as conn:
         cursor = conn.execute(

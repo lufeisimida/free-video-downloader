@@ -11,7 +11,9 @@
       "Bash(grep -qE \"^\\\\.env$\" .gitignore)",
       "Bash(git check-ignore *)",
       "Bash(grep -iE \"\\\\.env$|cookies\\\\.txt|\\\\.db$\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

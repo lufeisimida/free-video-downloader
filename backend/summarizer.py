@@ -80,7 +80,12 @@ class SubtitleExtractor:
 
     def _cache_path(self, url: str) -> Path:
         bvid = self._parse_bvid(url)
-        video_key = f"bilibili:{bvid}" if bvid else url.strip()
+        if bvid:
+            # 合集/多 P 视频：同一 BV 下不同分 P 的 ?p=N 必须区分，否则字幕会串
+            part = re.search(r"[?&]p=(\d+)", url)
+            video_key = f"bilibili:{bvid}:p{part.group(1)}" if part else f"bilibili:{bvid}"
+        else:
+            video_key = url.strip()
         digest = hashlib.sha256(video_key.encode("utf-8")).hexdigest()
         return self.CACHE_DIR / f"{digest}.json"
 
@@ -209,8 +214,15 @@ class SubtitleExtractor:
                 headers=headers, timeout=15,
             )
             view_data = view_resp.json().get("data", {})
-            cid = view_data.get("cid")
             aid = view_data.get("aid")
+            # 多 P 合集：根据 ?p=N 选对应分 P 的 cid，否则所有分 P 都会取到第 1 P 的字幕
+            pages = view_data.get("pages") or []
+            part = re.search(r"[?&]p=(\d+)", url)
+            page_index = (int(part.group(1)) - 1) if part else 0
+            if pages and 0 <= page_index < len(pages):
+                cid = pages[page_index].get("cid")
+            else:
+                cid = view_data.get("cid")
             if not cid or not aid:
                 return empty
 

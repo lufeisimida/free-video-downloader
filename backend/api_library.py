@@ -43,6 +43,7 @@ from database import (
     list_video_progress,
     list_wrong_questions,
     move_library_video,
+    rename_library_video,
     review_flashcard,
     rebuild_knowledge_relations,
     save_course_quiz,
@@ -73,6 +74,10 @@ class FolderUpdateRequest(BaseModel):
 
 class VideoMoveRequest(BaseModel):
     folder_id: int | None = None
+
+
+class VideoRenameRequest(BaseModel):
+    title: str
 
 
 class CourseQuizRequest(BaseModel):
@@ -542,6 +547,23 @@ async def move_video(
 ):
     _ensure_parent(user["id"], req.folder_id)
     video = move_library_video(user["id"], video_id, req.folder_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="视频记录不存在")
+    return {"success": True, "data": video}
+
+
+@router.patch("/videos/{video_id}/title")
+async def rename_video(
+    video_id: int,
+    req: VideoRenameRequest,
+    user: dict = Depends(get_current_user),
+):
+    title = (req.title or "").strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="视频名称不能为空")
+    if len(title) > 300:
+        title = title[:300]
+    video = rename_library_video(user["id"], video_id, title)
     if not video:
         raise HTTPException(status_code=404, detail="视频记录不存在")
     return {"success": True, "data": video}

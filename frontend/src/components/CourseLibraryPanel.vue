@@ -116,7 +116,7 @@
                       </div>
                       <div class="mt-2 flex items-center justify-between">
                         <span class="text-[11px]" :class="video.has_subtitle ? 'text-emerald-700' : 'text-amber-700'">{{ video.has_subtitle ? '字幕已就绪' : '等待字幕' }} · {{ formatDate(video.parsed_at) }}</span>
-                        <span class="flex items-center gap-3"><button @click="playVideo(video)" class="text-xs font-medium text-primary cursor-pointer">播放</button><button @click="removeVideo(video)" class="text-xs text-text-muted hover:text-rose-600 cursor-pointer">移除</button></span>
+                        <span class="flex items-center gap-3"><button @click="renameVideo(video)" class="text-xs text-text-muted hover:text-primary cursor-pointer">重命名</button><button @click="playVideo(video)" class="text-xs font-medium text-primary cursor-pointer">播放</button><button @click="removeVideo(video)" class="text-xs text-text-muted hover:text-rose-600 cursor-pointer">移除</button></span>
                       </div>
                     </li>
                   </ul>
@@ -129,7 +129,7 @@
                         <td class="px-3 py-3"><select :value="video.folder_id ?? ''" @change="moveVideo(video, $event.target.value)" class="h-8 w-full rounded-md border border-border bg-white px-2 text-xs text-text-secondary focus:border-primary focus:outline-none"><option value="">未归档</option><option v-for="folder in folderRows" :key="folder.id" :value="folder.id">{{ '—'.repeat(folder.depth) }} {{ folder.name }}</option></select></td>
                         <td class="px-3 py-3"><select :value="progressFor(video.id).completion_percent" @change="setVideoProgress(video, $event.target.value)" class="h-8 w-full rounded-md border border-border bg-white px-2 text-xs text-text-secondary"><option :value="0">未学习</option><option :value="25">学习 25%</option><option :value="50">学习 50%</option><option :value="75">学习 75%</option><option :value="100">已完成</option></select><p class="mt-1 text-[11px]" :class="video.has_subtitle ? 'text-emerald-700' : 'text-amber-700'">{{ video.has_subtitle ? '字幕已就绪' : '等待字幕' }}</p></td>
                         <td class="px-3 py-3 text-xs text-text-muted">{{ formatDate(video.parsed_at) }}</td>
-                        <td class="px-3 py-3 text-right"><button @click="playVideo(video)" class="mr-2 text-xs font-medium text-primary cursor-pointer">播放</button><button @click="removeVideo(video)" class="text-xs text-text-muted hover:text-rose-600 cursor-pointer">移除</button></td>
+                        <td class="px-3 py-3 text-right"><button @click="renameVideo(video)" class="mr-2 text-xs text-text-muted hover:text-primary cursor-pointer">重命名</button><button @click="playVideo(video)" class="mr-2 text-xs font-medium text-primary cursor-pointer">播放</button><button @click="removeVideo(video)" class="text-xs text-text-muted hover:text-rose-600 cursor-pointer">移除</button></td>
                       </tr>
                     </tbody>
                   </table>
@@ -263,6 +263,7 @@ import {
   getReminderSettings, getTodayPlan, getVideoPlayback, getWrongQuestions, markReminderShown,
   gradeVoiceRecall, importCourseWebPage,
   moveLibraryVideo, noteToFlashcard, organizeCourseNotes, processCourseMaterial, recordCourseAttempt,
+  renameLibraryVideo,
   retryProcessingJob, reviewFlashcard, saveLearningGoal, saveReminderSettings,
   semanticSearchCourse, startProcessingPipeline, updateLibraryFolder,
   updateVideoProgress, uploadCourseMaterial,
@@ -440,6 +441,7 @@ async function renameFolder(folder) { const name = window.prompt('新的目录�
 async function removeFolder(folder) { if (!window.confirm(`删除目录“${folder.name}”？其中的视频和子目录会自动上移，不会被删除。`)) return; try { await deleteLibraryFolder(folder.id); if (selectedFolderId.value === folder.id) selectedFolderId.value = folder.parent_id ?? 'all'; await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '删除目录失败') } }
 async function moveVideo(video, folderId) { try { await moveLibraryVideo(video.id, folderId === '' ? null : Number(folderId)); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '移动视频失败') } }
 async function removeVideo(video) { if (!window.confirm(`从解析历史中移除“${video.title}”？已生成的字幕和总结缓存不会删除。`)) return; try { await deleteLibraryVideo(video.id); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '移除失败') } }
+async function renameVideo(video) { const name = window.prompt('修改视频名称', video.title || ''); if (name === null) return; const title = name.trim(); if (!title || title === video.title) return; try { await renameLibraryVideo(video.id, title); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '重命名失败') } }
 function openVideo(video) { emit('open-video', video.url); emit('close') }
 
 async function switchView(view) {

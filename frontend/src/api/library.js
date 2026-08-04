@@ -45,6 +45,15 @@ export async function moveLibraryVideo(videoId, folderId = null) {
   return response.data.data
 }
 
+export async function renameLibraryVideo(videoId, title) {
+  const response = await axios.patch(
+    `/api/library/videos/${videoId}/title`,
+    { title },
+    { headers: authHeaders() },
+  )
+  return response.data.data
+}
+
 export async function deleteLibraryVideo(videoId) {
   await axios.delete(`/api/library/videos/${videoId}`, { headers: authHeaders() })
 }
