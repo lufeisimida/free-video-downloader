@@ -131,7 +131,7 @@ class SubtitleExtractor:
         clean_result["cache_hit"] = False
         return clean_result
 
-    def extract(self, url: str) -> dict:
+    def extract(self, url: str, force: bool = False) -> dict:
         """
         提取视频字幕，返回:
         {
@@ -152,7 +152,7 @@ class SubtitleExtractor:
                 "cache_hit": False,
             }
 
-        cached = self._load_cache(url)
+        cached = None if force else self._load_cache(url)
         if cached is not None:
             return cached
 
@@ -639,8 +639,9 @@ class AudioTranscriber:
         self,
         url: str,
         progress_callback: Optional[Callable[[dict], None]] = None,
+        force: bool = False,
     ) -> dict:
-        cached = self._load_cache(url)
+        cached = None if force else self._load_cache(url)
         if cached:
             self._emit_progress(
                 progress_callback, "cache", "已找到语音转写缓存", 100

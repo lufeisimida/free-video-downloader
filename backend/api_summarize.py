@@ -113,7 +113,7 @@ def _get_transcriber():
     return _get_transcriber._instance
 
 
-async def _transcribe_with_progress(url: str):
+async def _transcribe_with_progress(url: str, force: bool = False):
     """在线程中执行转写，并把线程回调桥接为异步进度事件。"""
     loop = asyncio.get_running_loop()
     progress_queue: asyncio.Queue[dict] = asyncio.Queue()
@@ -123,7 +123,7 @@ async def _transcribe_with_progress(url: str):
         loop.call_soon_threadsafe(progress_queue.put_nowait, data)
 
     future = loop.run_in_executor(
-        None, transcriber.transcribe_url, url, on_progress
+        None, transcriber.transcribe_url, url, on_progress, force
     )
 
     while not future.done() or not progress_queue.empty():
@@ -208,7 +208,8 @@ async def summarize_video(req: SummarizeRequest, user: dict = Depends(get_curren
     try:
         loop = asyncio.get_running_loop()
         stored = content_store.load(req.url)
-        saved_subtitle = stored.get("subtitle")
+        # force=True 时不复用已存字幕/转写，强制重新提取，避免旧的错误缓存串用
+        saved_subtitle = None if req.force else stored.get("subtitle")
 
         yield ServerSentEvent(
             raw_data=json.dumps({"messages": _saved_chat_messages(req.url, user)}, ensure_ascii=False),
@@ -240,7 +241,7 @@ async def summarize_video(req: SummarizeRequest, user: dict = Depends(get_curren
                 event="progress",
             )
             extractor = _get_extractor()
-            subtitle_data = await loop.run_in_executor(None, extractor.extract, req.url)
+            subtitle_data = await loop.run_in_executor(None, extractor.extract, req.url, req.force)
 
             if subtitle_data.get("cache_hit"):
                 yield ServerSentEvent(
@@ -257,7 +258,7 @@ async def summarize_video(req: SummarizeRequest, user: dict = Depends(get_curren
             )
 
             if not _has_usable_subtitle(subtitle_data):
-                async for event_type, event_data in _transcribe_with_progress(req.url):
+                async for event_type, event_data in _transcribe_with_progress(req.url, req.force):
                     if event_type == "progress":
                         yield ServerSentEvent(
                             raw_data=json.dumps(event_data, ensure_ascii=False),
