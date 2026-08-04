@@ -432,7 +432,12 @@ class AudioTranscriber:
 
     def _cache_key(self, url: str) -> str:
         bvid = SubtitleExtractor._parse_bvid(url)
-        video_key = f"bilibili:{bvid}" if bvid else url.strip()
+        if bvid:
+            # 合集/多 P 视频：不同分 P 的 ?p=N 必须区分，否则转写结果会串
+            part = re.search(r"[?&]p=(\d+)", url)
+            video_key = f"bilibili:{bvid}:p{part.group(1)}" if part else f"bilibili:{bvid}"
+        else:
+            video_key = url.strip()
         value = f"v1:{self.model_name}:{self.language or 'auto'}:{video_key}"
         return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
