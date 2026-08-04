@@ -3,9 +3,19 @@
     <div v-if="visible" class="fixed inset-0 z-[110] bg-black/35 backdrop-blur-sm" @click.self="$emit('close')">
       <section class="absolute inset-x-0 bottom-0 top-4 mx-auto flex max-w-7xl flex-col overflow-hidden rounded-t-lg border border-border bg-white shadow-2xl sm:inset-x-6 sm:bottom-6 sm:top-6 sm:rounded-lg">
         <header class="flex h-16 shrink-0 items-center justify-between border-b border-border px-5 sm:px-6">
-          <div class="min-w-0">
-            <h2 class="text-base font-semibold text-text-primary">课程学习中心</h2>
-            <p class="mt-0.5 text-xs text-text-muted">{{ library.videos.length }} 个解析记录 · {{ library.folders.length }} 个课程目录</p>
+          <div class="flex min-w-0 items-center gap-2">
+            <button
+              @click="sidebarCollapsed = !sidebarCollapsed"
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-muted hover:bg-gray-100 hover:text-primary cursor-pointer"
+              :title="sidebarCollapsed ? '展开目录' : '折叠目录'"
+            >
+              <svg v-if="!sidebarCollapsed" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 4v16M4 6h4m-4 5h4m-4 5h4M13 8l4 4-4 4" /></svg>
+              <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 4v16M4 6h4m-4 5h4m-4 5h4M17 8l-4 4 4 4" /></svg>
+            </button>
+            <div class="min-w-0">
+              <h2 class="text-base font-semibold text-text-primary">课程学习中心</h2>
+              <p class="mt-0.5 text-xs text-text-muted">{{ library.videos.length }} 个解析记录 · {{ library.folders.length }} 个课程目录</p>
+            </div>
           </div>
           <button @click="$emit('close')" class="flex h-9 w-9 items-center justify-center rounded-md text-text-muted hover:bg-gray-100 hover:text-text-primary cursor-pointer" title="关闭">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -17,7 +27,7 @@
         </div>
 
         <div v-else class="flex min-h-0 flex-1 flex-col md:flex-row">
-          <aside class="flex max-h-60 w-full shrink-0 flex-col border-b border-border bg-gray-50/70 md:max-h-none md:w-72 md:border-b-0 md:border-r">
+          <aside v-show="!sidebarCollapsed" class="flex max-h-60 w-full shrink-0 flex-col border-b border-border bg-gray-50/70 md:max-h-none md:w-72 md:border-b-0 md:border-r">
             <div class="border-b border-border-light p-3">
               <button @click="beginCreateFolder(null)" class="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-border bg-white text-sm font-medium text-text-secondary hover:border-primary hover:text-primary cursor-pointer">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>新建课程目录
@@ -476,6 +486,7 @@ const renameTarget = ref(null)
 const renameValue = ref('')
 const renameSaving = ref(false)
 const renameInput = ref(null)
+const sidebarCollapsed = ref(false)
 function renameVideo(video) { renameTarget.value = video; renameValue.value = video.title || ''; nextTick(() => renameInput.value?.focus()) }
 function closeRename() { if (renameSaving.value) return; renameTarget.value = null; renameValue.value = '' }
 async function confirmRename() {
