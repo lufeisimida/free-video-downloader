@@ -248,6 +248,37 @@
       <section v-if="continuousOpen" class="absolute inset-x-3 bottom-3 top-3 z-20 mx-auto flex max-w-3xl flex-col overflow-hidden rounded-lg border border-border bg-white shadow-2xl sm:inset-x-10 sm:bottom-10 sm:top-10"><header class="flex h-16 shrink-0 items-center justify-between border-b border-border px-5"><div><p class="text-xs font-semibold text-primary">连续学习 · {{ continuousIndex + 1 }}/{{ continuousItems.length }}</p><h3 class="mt-1 text-sm font-semibold text-text-primary">{{ continuousCurrent?.title || '今日任务已完成' }}</h3></div><button @click="stopContinuousSession" class="h-9 rounded-md border border-border px-3 text-xs text-text-secondary cursor-pointer">退出</button></header><div class="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-6 text-center"><template v-if="continuousCurrent"><span class="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-text-muted">{{ continuousTypeLabel(continuousCurrent.type) }}</span><p class="mt-5 max-w-xl text-lg font-semibold leading-8 text-text-primary">{{ continuousCurrent.title }}</p><button v-if="['flashcard','wrong'].includes(continuousCurrent.type)" @click="continuousReveal = !continuousReveal" class="mt-6 min-h-12 rounded-md border border-border px-5 text-sm font-medium text-text-secondary cursor-pointer">{{ continuousReveal ? continuousReference : '显示参考答案' }}</button><div v-if="continuousReveal && ['flashcard','wrong'].includes(continuousCurrent.type)" class="mt-6 w-full max-w-xl border-t border-border-light pt-5"><div class="flex items-center justify-center gap-2"><button @click="toggleVoiceRecording" :disabled="voiceScoring" class="h-10 rounded-md border px-4 text-sm font-medium cursor-pointer" :class="voiceRecording ? 'border-rose-300 text-rose-600' : 'border-border text-text-secondary'">{{ voiceRecording ? '停止并评分' : '语音复述' }}</button><span v-if="voiceScoring" class="text-xs text-text-muted">正在识别...</span></div><div v-if="voiceResult" class="mt-4 rounded-md bg-gray-50 p-4 text-left"><p class="text-sm font-semibold" :class="voiceResult.score >= 80 ? 'text-emerald-700' : 'text-amber-700'">复述得分 {{ voiceResult.score }}</p><p class="mt-2 text-xs leading-5 text-text-secondary">{{ voiceResult.transcript }}</p><p class="mt-2 text-xs text-text-muted">{{ voiceResult.feedback }}</p></div></div></template><div v-else><p class="text-xl font-semibold text-text-primary">今日连续学习已完成</p><p class="mt-2 text-sm text-text-muted">复习、薄弱点训练和视频任务已走完一轮。</p></div></div><footer class="flex h-16 shrink-0 items-center justify-between border-t border-border px-5"><button @click="previousContinuous" :disabled="continuousIndex === 0" class="h-9 rounded-md border border-border px-4 text-sm disabled:opacity-40 cursor-pointer">上一项</button><button @click="nextContinuous" class="h-9 rounded-md bg-primary px-5 text-sm font-medium text-white cursor-pointer">{{ continuousCurrent ? '完成并继续' : '关闭' }}</button></footer></section>
     </div>
   </Teleport>
+
+  <!-- 重命名视频弹窗 -->
+  <Teleport to="body">
+    <div v-if="renameTarget" class="fixed inset-0 z-[130] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" @click.self="closeRename">
+      <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-border-light px-5 py-4">
+          <h3 class="text-base font-semibold text-text-primary">重命名视频</h3>
+          <button @click="closeRename" class="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-gray-100 hover:text-text-primary cursor-pointer" title="关闭">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <label class="block text-sm font-medium text-text-secondary mb-1.5">视频名称</label>
+          <textarea
+            ref="renameInput"
+            v-model="renameValue"
+            rows="3"
+            maxlength="300"
+            @keydown.enter.prevent="confirmRename"
+            class="w-full resize-y rounded-xl border border-border px-3 py-2.5 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="输入新的视频名称"
+          ></textarea>
+          <p class="mt-1 text-xs text-text-muted">按 Enter 保存，Shift+Enter 换行</p>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-border-light px-5 py-3.5">
+          <button @click="closeRename" :disabled="renameSaving" class="h-9 rounded-lg border border-border px-4 text-sm font-medium text-text-secondary hover:bg-gray-50 disabled:opacity-50 cursor-pointer">取消</button>
+          <button @click="confirmRename" :disabled="renameSaving || !renameValue.trim()" class="h-9 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50 cursor-pointer">{{ renameSaving ? '保存中...' : '保存' }}</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -441,7 +472,31 @@ async function renameFolder(folder) { const name = window.prompt('新的目录�
 async function removeFolder(folder) { if (!window.confirm(`删除目录“${folder.name}”？其中的视频和子目录会自动上移，不会被删除。`)) return; try { await deleteLibraryFolder(folder.id); if (selectedFolderId.value === folder.id) selectedFolderId.value = folder.parent_id ?? 'all'; await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '删除目录失败') } }
 async function moveVideo(video, folderId) { try { await moveLibraryVideo(video.id, folderId === '' ? null : Number(folderId)); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '移动视频失败') } }
 async function removeVideo(video) { if (!window.confirm(`从解析历史中移除“${video.title}”？已生成的字幕和总结缓存不会删除。`)) return; try { await deleteLibraryVideo(video.id); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '移除失败') } }
-async function renameVideo(video) { const name = window.prompt('修改视频名称', video.title || ''); if (name === null) return; const title = name.trim(); if (!title || title === video.title) return; try { await renameLibraryVideo(video.id, title); await loadLibrary(); emit('changed') } catch (err) { error.value = apiError(err, '重命名失败') } }
+const renameTarget = ref(null)
+const renameValue = ref('')
+const renameSaving = ref(false)
+const renameInput = ref(null)
+function renameVideo(video) { renameTarget.value = video; renameValue.value = video.title || ''; nextTick(() => renameInput.value?.focus()) }
+function closeRename() { if (renameSaving.value) return; renameTarget.value = null; renameValue.value = '' }
+async function confirmRename() {
+  const video = renameTarget.value
+  if (!video) return
+  const title = renameValue.value.trim()
+  if (!title) return
+  if (title === video.title) { closeRename(); return }
+  renameSaving.value = true
+  try {
+    await renameLibraryVideo(video.id, title)
+    await loadLibrary()
+    emit('changed')
+    renameTarget.value = null
+    renameValue.value = ''
+  } catch (err) {
+    error.value = apiError(err, '重命名失败')
+  } finally {
+    renameSaving.value = false
+  }
+}
 function openVideo(video) { emit('open-video', video.url); emit('close') }
 
 async function switchView(view) {

@@ -936,3 +936,14 @@ curl -X POST -H 'Content-Type: application/json' \
 
 > 文档版本：v1.1 | 适配 free-video-downloader 主分支 | 服务器规格：2C2G Ubuntu 24.04 | Whisper: small + int8 + beam=10 + lang=zh
 > 如有改动请同步更新此文档
+
+
+
+  接入后重新部署
+
+  cd backend && sudo systemctl restart video-downloader-backend
+  cd ../frontend && npm run build
+
+  以后更新就一条命令
+
+  cd /home/deploy/free-video-downloader && git pull origin master
