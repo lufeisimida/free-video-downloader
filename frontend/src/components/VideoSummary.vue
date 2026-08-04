@@ -22,6 +22,25 @@
           </button>
         </div>
 
+        <!-- 缓存控制 -->
+        <div class="flex items-center justify-between gap-2 border-b border-border-light bg-slate-50/60 px-4 py-2 sm:px-5">
+          <label class="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer select-none" title="勾选后重新生成会忽略缓存，重新拉取字幕/重新转写">
+            <input type="checkbox" v-model="forceNoCache" class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer" />
+            不使用缓存（强制重新拉取字幕）
+          </label>
+          <button
+            v-if="forceNoCache && (summaryText || mindmapMarkdown)"
+            @click="regenerateSummary"
+            :disabled="loading || !!regeneratingPart"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-primary/30 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+          >
+            <svg class="h-3.5 w-3.5" :class="{ 'animate-spin': regeneratingPart === 'all' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M5 19A9 9 0 0119 5M19 5h-5M19 5v5" />
+            </svg>
+            强制重新生成
+          </button>
+        </div>
+
         <!-- 内容区域 -->
         <div class="p-5 sm:p-6 min-h-[400px] flex-1 overflow-y-auto">
           <!-- 加载状态 -->
@@ -642,6 +661,7 @@ const loading = ref(false)
 const loadingMessage = ref('正在提取视频字幕...')
 const progressPercent = ref(0)
 const regeneratingPart = ref('')
+const forceNoCache = ref(false)
 const clearingChat = ref(false)
 const videoNotes = ref([])
 const videoNoteTime = ref(0)
@@ -1633,6 +1653,12 @@ const quotaInfo = ref(null)
 
 async function regenerateSummary() {
   if (loading.value || regeneratingPart.value) return
+  if (forceNoCache.value) {
+    if (!window.confirm('将不使用缓存、重新拉取字幕并重新生成总结与思维导图，是否继续？')) return
+    activeTab.value = 'summary'
+    await startSummarize(true)
+    return
+  }
   if (!window.confirm('将忽略缓存并重新生成总结，是否继续？')) return
   activeTab.value = 'summary'
   await startSummarize(false, { parts: ['summary'], preserveOther: true })
@@ -1640,6 +1666,12 @@ async function regenerateSummary() {
 
 async function regenerateMindmap() {
   if (loading.value || regeneratingPart.value) return
+  if (forceNoCache.value) {
+    if (!window.confirm('将不使用缓存、重新拉取字幕并重新生成总结与思维导图，是否继续？')) return
+    activeTab.value = 'mindmap'
+    await startSummarize(true)
+    return
+  }
   if (!window.confirm('将忽略缓存并重新生成思维导图，是否继续？')) return
   activeTab.value = 'mindmap'
   await startSummarize(false, { parts: ['mindmap'], preserveOther: true })
